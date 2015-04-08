@@ -16,7 +16,7 @@ OUTPUT_PACKAGE=Carthage.pkg
 VERSION_STRING=$(shell agvtool what-marketing-version -terse1)
 COMPONENTS_PLIST=Source/carthage/Components.plist
 
-.PHONY: all bootstrap clean install package test uninstall
+.PHONY: all bootstrap clean install package test uninstall lint
 
 all: bootstrap
 	$(BUILD_TOOL) $(XCODEFLAGS) build
@@ -62,3 +62,6 @@ package: installables
 		--root "$(TEMPORARY_FOLDER)" \
 		--version "$(VERSION_STRING)" \
 		"$(OUTPUT_PACKAGE)"
+
+lint:
+	pod lib lint --allow-warnings --sources=neonichu,master CarthageKit.podspec
