@@ -182,7 +182,14 @@ public func locateProjectsInDirectory(directoryURL: NSURL) -> SignalProducer<Pro
 		|> reduce([]) { (var matches: [ProjectEnumerationMatch], tuple) -> [ProjectEnumerationMatch] in
 			let (enumerator, URL) = tuple
 			if let match = ProjectEnumerationMatch.matchURL(URL, fromEnumerator: enumerator).value {
-				matches.append(match)
+				switch match.locator {
+				case .ProjectFile:
+					matches.append(match)
+					break
+				case .Workspace:
+					matches.insert(match, atIndex: 0)
+					break
+				}
 			}
 
 			return matches
@@ -933,15 +940,6 @@ public func buildInDirectory(directoryURL: NSURL, withConfiguration configuratio
 	let locatorSignal = locateProjectsInDirectory(directoryURL)
 
 	let schemeSignals = locatorSignal
-		|> filter { (project: ProjectLocator) in
-			switch project {
-			case .ProjectFile:
-				return true
-
-			default:
-				return false
-			}
-		}
 		|> take(1)
 		|> map { (project: ProjectLocator) -> SignalProducer<String, CarthageError> in
 			return schemesInProject(project)
